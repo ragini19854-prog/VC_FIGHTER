@@ -1,4 +1,4 @@
-Import asyncio
+import asyncio
 from typing import Optional
 
 from pytgcalls import PyTgCalls
