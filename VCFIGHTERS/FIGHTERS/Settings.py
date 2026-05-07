@@ -1,8 +1,3 @@
-# ╔══════════════════════════════════════════════════════════════╗
-# ║         VCFIGHTER — Config Panel & Settings                  ║
-# ║         File: VCFIGHTERS/FIGHTERS/Settings.py                ║
-# ╚══════════════════════════════════════════════════════════════╝
-
 import asyncio
 import time
 
@@ -34,68 +29,60 @@ from VCFIGHTERS.FIGHTERS.ffmpegsettings import open_ffmpeg_panel
 
 log = LOGGER("Settings")
 
-# ─────────────────────────────────────────────
+
+# ──────────────────────────────────────────────────────────────
 # AUTH
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
 
 def is_owner(user_id: int) -> bool:
     return user_id == int(Config.OWNER_ID)
 
-
 async def is_sudo(user_id: int) -> bool:
     return user_id in await get_sudo_users()
-
 
 async def is_authorized(user_id: int) -> bool:
     return is_owner(user_id) or await is_sudo(user_id)
 
 
-# ─────────────────────────────────────────────
-# CONVERSATION STATE  (in-memory, per user)
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# CONVERSATION STATE
+# ──────────────────────────────────────────────────────────────
 
-_state: dict[int, dict] = {}   # {user_id: {"step": ..., "data": ...}}
-
+_state: dict[int, dict] = {}
 
 def set_state(uid: int, step: str, **data):
     _state[uid] = {"step": step, **data}
 
-
 def get_state(uid: int) -> dict:
     return _state.get(uid, {})
-
 
 def clear_state(uid: int):
     _state.pop(uid, None)
 
 
-# ─────────────────────────────────────────────
-# IMPORT BOT APP
-# ─────────────────────────────────────────────
-
 from VCFIGHTERS.core.bot import app  # noqa: E402
 
 
-# ══════════════════════════════════════════════
-#  /config  — MAIN PANEL
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
+#  MAIN CONFIG PANEL
+# ══════════════════════════════════════════════════════════════
 
 def _main_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📋 𝗦𝗲𝘁 𝗟𝗼𝗴𝗴𝗲𝗿",       callback_data="cfg_logger"),
-            InlineKeyboardButton("🛠️ 𝗙𝗙𝗺𝗽𝗲𝗴 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀", callback_data="cfg_ffmpeg"),
+            InlineKeyboardButton("˹ 𝐋ᴏɢɢєʀ ˼",     callback_data="cfg_logger"),
+            InlineKeyboardButton("˹ 𝐅𝐅ϻρєɢ ˼",     callback_data="cfg_ffmpeg"),
         ],
         [
-            InlineKeyboardButton("🎮 𝗦𝗲𝘁 𝗠𝗼𝗱𝗲",         callback_data="cfg_mode"),
-            InlineKeyboardButton("👥 𝗨𝗦𝗘𝗥𝗕𝗢𝗧𝘀",          callback_data="cfg_ub_page_0"),
+            InlineKeyboardButton("˹ 𝐌ᴏᴅє ˼",       callback_data="cfg_mode"),
+            InlineKeyboardButton("˹ 𝐔sєʀ𝐁ᴏᴛs ˼",   callback_data="cfg_ub_page_0"),
         ],
         [
-            InlineKeyboardButton("🎯 𝗦𝗲𝘁 𝗧𝗮𝗿𝗴𝗲𝘁",        callback_data="cfg_target"),
-            InlineKeyboardButton("📡 𝗣𝘆𝗧𝗴𝗖𝗮𝗹𝗹𝘀",          callback_data="cfg_pytgcalls"),
+            InlineKeyboardButton("˹ 𝐓ᴀʀɢєᴛ ˼",     callback_data="cfg_target"),
+            InlineKeyboardButton("˹ ρʏᴛɢ𝐂ᴀʟʟs ˼",  callback_data="cfg_pytgcalls"),
         ],
         [
-            InlineKeyboardButton("🏓 𝗣𝗶𝗻𝗴𝘀",              callback_data="cfg_pings"),
+            InlineKeyboardButton("˹ ριηɢs ˼",       callback_data="cfg_pings"),
         ],
     ])
 
@@ -105,7 +92,7 @@ async def cmd_config(client: Client, message: Message):
     if not await is_authorized(message.from_user.id):
         return
     await message.reply(
-        "⚙️ **𝗩𝗖𝗙𝗜𝗚𝗛𝗧𝗘𝗥 𝗖𝗢𝗡𝗙𝗜𝗚 𝗣𝗔𝗡𝗘𝗟**",
+        "⚙️ **ᴠᴄғιɢнᴛєʀ ᴄᴏηғιɢ ρᴀηєʟ**",
         reply_markup=_main_menu_kb(),
     )
 
@@ -113,66 +100,72 @@ async def cmd_config(client: Client, message: Message):
 @app.on_callback_query(pyro_filters.regex("^config_main$"))
 async def cb_config_main(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     clear_state(query.from_user.id)
     await query.edit_message_text(
-        "⚙️ **𝗩𝗖𝗙𝗜𝗚𝗛𝗧𝗘𝗥 𝗖𝗢𝗡𝗙𝗜𝗚 𝗣𝗔𝗡𝗘𝗟**",
+        "⚙️ **ᴠᴄғιɢнᴛєʀ ᴄᴏηғιɢ ρᴀηєʟ**",
         reply_markup=_main_menu_kb(),
     )
 
 
-# ══════════════════════════════════════════════
-#  BUTTON 1 — FFmpeg  (delegates to ffmpegsettings.py)
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
+#  BUTTON 1 — FFmpeg (delegates to ffmpegsettings.py)
+# ══════════════════════════════════════════════════════════════
 
 @app.on_callback_query(pyro_filters.regex("^cfg_ffmpeg$"))
 async def cb_ffmpeg(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     await open_ffmpeg_panel(client, query)
 
 
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 #  BUTTON 2 — Set Logger
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
 @app.on_callback_query(pyro_filters.regex("^cfg_logger$"))
 async def cb_logger(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     set_state(query.from_user.id, "await_logger_chat")
     await query.edit_message_text(
-        "📋 **𝗦𝗲𝘁 𝗟𝗼𝗴𝗴𝗲𝗿 𝗖𝗵𝗮𝘁**\n\n"
-        "Send the **Chat ID** where logs should be sent.\n"
-        "_(Forward any message from that chat or paste the ID directly)_",
+        "📋 **ʟᴏɢɢєʀ ᴄнᴀᴛ sєᴛ ᴋᴀʀᴏ**\n\n"
+        "ʟᴏɢɢєʀ ɢʀᴏᴜρ ᴋᴀ **ᴄнᴀᴛ ιᴅ** ʙнєᴊᴏ.\n"
+        "_(ᴜs ɢʀᴏᴜρ sє ᴋᴏι ʙнι ϻєssᴀɢє ғᴏʀᴡᴀʀᴅ ᴋᴀʀᴏ ʏᴀ ᴅιʀєᴄᴛ ιᴅ ρᴀsᴛє ᴋᴀʀᴏ)_",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")]
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")]
         ]),
     )
 
 
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 #  BUTTON 3 — Set Mode
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
 @app.on_callback_query(pyro_filters.regex("^cfg_mode$"))
 async def cb_mode(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
-    s = await get_settings()
-    cur = s.get("mode", "none")
+    s   = await get_settings()
+    cur = s.get("mode", "dm")
     await query.edit_message_text(
-        f"🎮 **𝗦𝗘𝗟𝗘𝗖𝗧 𝗠𝗢𝗗𝗘**\n\nCurrent: `{cur}`",
+        f"🎮 **ϻᴏᴅє sєʟєᴄᴛ ᴋᴀʀᴏ**\n\nᴄᴜʀʀєηᴛ: `{cur.upper()}`",
         reply_markup=InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🟢 𝗔𝘂𝘁𝗼 𝗠𝗼𝗱𝗲", callback_data="cfg_mode_auto"),
-                InlineKeyboardButton("🔵 𝗗𝗠 𝗠𝗼𝗱𝗲",   callback_data="cfg_mode_dm"),
+                InlineKeyboardButton(
+                    f"{'✦ ' if cur=='auto' else ''}˹ 𝚫ᴜᴛᴏ 𝐌ᴏᴅє ˼",
+                    callback_data="cfg_mode_auto",
+                ),
+                InlineKeyboardButton(
+                    f"{'✦ ' if cur=='dm' else ''}˹ 𝐃𝐌 𝐌ᴏᴅє ˼",
+                    callback_data="cfg_mode_dm",
+                ),
             ],
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")],
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")],
         ]),
     )
 
@@ -180,121 +173,136 @@ async def cb_mode(client: Client, query: CallbackQuery):
 @app.on_callback_query(pyro_filters.regex("^cfg_mode_(auto|dm)$"))
 async def cb_mode_set(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     mode = query.data.split("_")[-1]
     await save_settings({"mode": mode})
-    await query.answer(f"✅ Mode set to {mode.upper()}", show_alert=False)
+    await query.answer(f"✅ ϻᴏᴅє → {mode.upper()}", show_alert=False)
     await query.edit_message_text(
-        f"🎮 **𝗦𝗘𝗟𝗘𝗖𝗧 𝗠𝗢𝗗𝗘**\n\nCurrent: `{mode}`",
+        f"🎮 **ϻᴏᴅє sєʟєᴄᴛ ᴋᴀʀᴏ**\n\nᴄᴜʀʀєηᴛ: `{mode.upper()}`",
         reply_markup=InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🟢 𝗔𝘂𝘁𝗼 𝗠𝗼𝗱𝗲", callback_data="cfg_mode_auto"),
-                InlineKeyboardButton("🔵 𝗗𝗠 𝗠𝗼𝗱𝗲",   callback_data="cfg_mode_dm"),
+                InlineKeyboardButton(
+                    f"{'✦ ' if mode=='auto' else ''}˹ 𝚫ᴜᴛᴏ 𝐌ᴏᴅє ˼",
+                    callback_data="cfg_mode_auto",
+                ),
+                InlineKeyboardButton(
+                    f"{'✦ ' if mode=='dm' else ''}˹ 𝐃𝐌 𝐌ᴏᴅє ˼",
+                    callback_data="cfg_mode_dm",
+                ),
             ],
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")],
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")],
         ]),
     )
 
 
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 #  BUTTON 4 — USERBOTs Manager
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
 def _ub_panel(userbots: list, page: int) -> tuple[str, InlineKeyboardMarkup]:
     total = len(userbots)
+
     if total == 0:
-        text = "👥 **𝗨𝗦𝗘𝗥𝗕𝗢𝗧𝗦 𝗠𝗔𝗡𝗔𝗚𝗘𝗥**\n\nNo userbots added yet."
+        text = (
+            "👥 **ᴜsєʀʙᴏᴛs ϻᴀηᴀɢєʀ**\n\n"
+            "ᴋᴏι ᴜsєʀʙᴏᴛ ηᴀнι ᴀᴅᴅ нᴜᴀ ᴀʙнι."
+        )
         kb = InlineKeyboardMarkup([
-            [InlineKeyboardButton("➕ 𝗦𝗲𝘁 𝗦𝘁𝗿𝗶𝗻𝗴 𝗦𝗲𝘀𝘀𝗶𝗼𝗻", callback_data="cfg_ub_add_menu")],
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")],
+            [InlineKeyboardButton("˹ sᴛʀιηɢ sєssιᴏη ˼", callback_data="cfg_ub_add_menu")],
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼",         callback_data="config_main")],
         ])
         return text, kb
 
-    ub   = userbots[page]
-    phone  = ub.get("phone", "𝗨𝗻𝗸𝗻𝗼𝘄𝗻")
-    status = "✅ 𝗔𝗰𝘁𝗶𝘃𝗲" if ub.get("active") else "❌ 𝗜𝗻𝗮𝗰𝘁𝗶𝘃𝗲"
+    page   = max(0, min(page, total - 1))
+    ub     = userbots[page]
+    phone  = ub.get("phone", "ᴜηᴋηᴏᴡη")
+    status = "✅ ᴀᴄᴛιᴠє" if ub.get("active") else "❌ ιηᴀᴄᴛιᴠє"
 
     text = (
-        f"👥 **𝗨𝗦𝗘𝗥𝗕𝗢𝗧𝗦 𝗠𝗔𝗡𝗔𝗚𝗘𝗥**\n\n"
-        f"𝗧𝗼𝘁𝗮𝗹 𝗨𝘀𝗲𝗿𝗯𝗼𝘁𝘀: {total}\n\n"
+        f"👥 **ᴜsєʀʙᴏᴛs ϻᴀηᴀɢєʀ**\n\n"
+        f"ᴛᴏᴛᴀʟ: **{total}**\n\n"
         f"📱 `{phone}`  |  {status}"
     )
 
     nav = []
-    if page > 0:
-        nav.append(InlineKeyboardButton("◀️ 𝗣𝗿𝗲𝘃", callback_data=f"cfg_ub_page_{page-1}"))
-    nav.append(InlineKeyboardButton(f"𝗨𝘀𝗲𝗿𝗯𝗼𝘁 {page+1} 𝗼𝗳 {total}", callback_data="noop"))
-    if page < total - 1:
-        nav.append(InlineKeyboardButton("𝗡𝗲𝘅𝘁 ▶️", callback_data=f"cfg_ub_page_{page+1}"))
+    if total > 1:
+        nav = [
+            InlineKeyboardButton("˹ ◀️ ρʀєᴠ ˼", callback_data=f"cfg_ub_page_{(page-1)%total}"),
+            InlineKeyboardButton(f"{page+1}/{total}", callback_data="noop"),
+            InlineKeyboardButton("˹ ηєxᴛ ▶️ ˼", callback_data=f"cfg_ub_page_{(page+1)%total}"),
+        ]
 
-    kb = InlineKeyboardMarkup([
-        nav,
-        [InlineKeyboardButton("➕ 𝗦𝗲𝘁 𝗦𝘁𝗿𝗶𝗻𝗴 𝗦𝗲𝘀𝘀𝗶𝗼𝗻", callback_data="cfg_ub_add_menu")],
+    rows = []
+    if nav:
+        rows.append(nav)
+    rows += [
+        [InlineKeyboardButton("˹ sᴛʀιηɢ sєssιᴏη ˼", callback_data="cfg_ub_add_menu")],
         [
-            InlineKeyboardButton("❌ 𝗗𝗲𝗹 𝗧𝗵𝗶𝘀",  callback_data=f"cfg_ub_del_{page}"),
-            InlineKeyboardButton("🗑️ 𝗗𝗲𝗹𝗲𝘁𝗲 𝗔𝗹𝗹", callback_data="cfg_ub_delall"),
+            InlineKeyboardButton("˹ ᴅєʟ sєssιᴏη ˼", callback_data=f"cfg_ub_del_{page}"),
+            InlineKeyboardButton("˹ ᴅєʟ 𝚫ʟʟ ˼",     callback_data="cfg_ub_delall"),
         ],
-        [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")],
-    ])
-    return text, kb
+        [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")],
+    ]
+
+    return text, InlineKeyboardMarkup(rows)
 
 
 @app.on_callback_query(pyro_filters.regex(r"^cfg_ub_page_(\d+)$"))
 async def cb_ub_page(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
-    page = int(query.data.split("_")[-1])
-    ubs  = await get_all_userbots()
-    text, kb = _ub_panel(ubs, min(page, max(0, len(ubs)-1)))
+    page     = int(query.data.split("_")[-1])
+    userbots = await get_all_userbots()
+    text, kb = _ub_panel(userbots, page)
     await query.edit_message_text(text, reply_markup=kb)
 
 
 @app.on_callback_query(pyro_filters.regex("^cfg_ub_add_menu$"))
 async def cb_ub_add_menu(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     await query.edit_message_text(
-        "➕ **𝗔𝗱𝗱 𝗨𝘀𝗲𝗿𝗯𝗼𝘁**\n\nChoose how to add:",
+        "➕ **ᴜsєʀʙᴏᴛ ᴀᴅᴅ ᴋᴀʀᴏ**\n\nᴋᴀisє ᴀᴅᴅ ᴋᴀʀηᴀ нᴀι?",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("📱 𝗕𝘆 𝗣𝗵𝗼𝗻𝗲 𝗡𝘂𝗺𝗯𝗲𝗿", callback_data="cfg_ub_by_phone")],
-            [InlineKeyboardButton("🖊️ 𝗦𝗲𝘁 𝗠𝗮𝗻𝘂𝗮𝗹𝗹𝘆",      callback_data="cfg_ub_manual")],
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="cfg_ub_page_0")],
+            [InlineKeyboardButton("˹ ρнᴏηє ηᴜϻ𝐁єʀ ˼", callback_data="cfg_ub_by_phone")],
+            [InlineKeyboardButton("˹ ϻᴀηᴜᴀʟ sєᴛ ˼",    callback_data="cfg_ub_manual")],
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼",        callback_data="cfg_ub_page_0")],
         ]),
     )
 
 
-# ── By Phone Number ──────────────────────────────────────────
+# ── By Phone Number ────────────────────────────────────────────
 
 @app.on_callback_query(pyro_filters.regex("^cfg_ub_by_phone$"))
 async def cb_ub_by_phone(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     set_state(query.from_user.id, "await_phone")
     await query.edit_message_text(
-        "📱 **𝗕𝘆 𝗣𝗵𝗼𝗻𝗲 𝗡𝘂𝗺𝗯𝗲𝗿**\n\n"
-        "Send the phone number with country code:\n`+91XXXXXXXXXX`",
+        "📱 **ρнᴏηє ηᴜϻʙєʀ sє ᴀᴅᴅ ᴋᴀʀᴏ**\n\n"
+        "ᴄᴏᴜηᴛʀʏ ᴄᴏᴅє ᴋє sᴀᴀᴛн ηᴜϻʙєʀ ʙнєᴊᴏ:\n`+91XXXXXXXXXX`",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="cfg_ub_add_menu")]
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="cfg_ub_add_menu")]
         ]),
     )
 
 
-# ── Manual Session ───────────────────────────────────────────
+# ── Manual Session ─────────────────────────────────────────────
 
 @app.on_callback_query(pyro_filters.regex("^cfg_ub_manual$"))
 async def cb_ub_manual(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     set_state(query.from_user.id, "await_session_string")
     await query.edit_message_text(
-        "🖊️ **𝗦𝗲𝘁 𝗠𝗮𝗻𝘂𝗮𝗹𝗹𝘆**\n\nPaste the **String Session** below:",
+        "🖊️ **ϻᴀηᴜᴀʟ sєssιᴏη sєᴛ**\n\n**sᴛʀιηɢ sєssιᴏη** ηιᴄнє ρᴀsᴛє ᴋᴀʀᴏ:",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="cfg_ub_add_menu")]
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="cfg_ub_add_menu")]
         ]),
     )
 
@@ -305,28 +313,27 @@ async def cmd_setsession(client: Client, message: Message):
         return
     parts = message.text.split(None, 1)
     if len(parts) < 2:
-        await message.reply("Usage: `/setsession <string_session>`")
+        await message.reply("ᴜsᴀɢє: `/setsession <string_session>`")
         return
-    session = parts[1].strip()
-    await _save_manual_session(client, message, session, message.from_user.id)
+    await _save_manual_session(client, message, parts[1].strip(), message.from_user.id)
 
 
 async def _save_manual_session(client, msg_or_query, session: str, user_id: int):
     try:
         from pyrogram import Client as PyroClient
         tmp = PyroClient(
-            name="tmp_verify",
+            "tmp_verify",
             api_id=Config.API_ID,
             api_hash=Config.API_HASH,
             session_string=session,
             no_updates=True,
         )
         await tmp.start()
-        me = await tmp.get_me()
-        phone = me.phone_number or "Unknown"
+        me    = await tmp.get_me()
+        phone = me.phone_number or "ᴜηᴋηᴏᴡη"
         await tmp.stop()
     except Exception as e:
-        err = f"❌ Invalid session: `{e}`"
+        err = f"❌ ιηᴠᴀʟιᴅ sєssιᴏη: `{e}`"
         if isinstance(msg_or_query, Message):
             await msg_or_query.reply(err)
         else:
@@ -335,125 +342,134 @@ async def _save_manual_session(client, msg_or_query, session: str, user_id: int)
 
     await add_userbot({
         "session_string": session,
-        "phone": phone,
-        "added_by": user_id,
-        "added_at": int(time.time()),
-        "active": True,
+        "phone":          phone,
+        "added_by":       user_id,
+        "added_at":       int(time.time()),
+        "active":         True,
     })
 
-    # Start the new userbot client
     try:
         from VCFIGHTERS.core.userbot import userbot_manager
         await userbot_manager.start_userbot(session)
     except Exception as e:
-        log.warning(f"Userbot started in DB but client failed: {e}")
+        log.warning(f"DB saved but client failed to start: {e}")
 
-    ok = f"✅ Userbot `{phone}` added & started!"
+    ok = f"✅ ᴜsєʀʙᴏᴛ `{phone}` ᴀᴅᴅєᴅ & sᴛᴀʀᴛєᴅ!"
     if isinstance(msg_or_query, Message):
         await msg_or_query.reply(ok)
     else:
-        await msg_or_query.edit_message_text(ok, reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="cfg_ub_page_0")]
-        ]))
+        await msg_or_query.edit_message_text(
+            ok,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="cfg_ub_page_0")]
+            ]),
+        )
 
 
-# ── Delete This / Delete All ─────────────────────────────────
+# ── Delete ──────────────────────────────────────────────────────
 
 @app.on_callback_query(pyro_filters.regex(r"^cfg_ub_del_(\d+)$"))
 async def cb_ub_del(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
-    page = int(query.data.split("_")[-1])
-    ubs  = await get_all_userbots()
-    if not ubs or page >= len(ubs):
-        await query.answer("No userbot at this index.", show_alert=True)
+    page     = int(query.data.split("_")[-1])
+    userbots = await get_all_userbots()
+    if not userbots or page >= len(userbots):
+        await query.answer("ηᴏ ᴜsєʀʙᴏᴛ ᴀᴛ ᴛнιs ιηᴅєx.", show_alert=True)
         return
-    ub = ubs[page]
+    ub = userbots[page]
     await delete_userbot(ub["session_string"])
     try:
         from VCFIGHTERS.core.userbot import userbot_manager
         await userbot_manager.stop_userbot(ub["session_string"])
-    except Exception: pass
-    await query.answer(f"🗑️ Userbot {ub.get('phone','?')} deleted.", show_alert=False)
-    ubs = await get_all_userbots()
-    new_page = min(page, max(0, len(ubs)-1))
-    text, kb = _ub_panel(ubs, new_page)
+    except Exception:
+        pass
+    await query.answer(f"🗑️ {ub.get('phone','?')} ᴅєʟєᴛєᴅ.", show_alert=False)
+    userbots = await get_all_userbots()
+    text, kb = _ub_panel(userbots, max(0, page - 1))
     await query.edit_message_text(text, reply_markup=kb)
 
 
 @app.on_callback_query(pyro_filters.regex("^cfg_ub_delall$"))
 async def cb_ub_delall(client: Client, query: CallbackQuery):
     if not is_owner(query.from_user.id):
-        await query.answer("⛔ 𝗢𝘄𝗻𝗲𝗿 𝗢𝗻𝗹𝘆", show_alert=True)
+        await query.answer("⛔ ᴏᴡηєʀ ᴏηʟʏ", show_alert=True)
         return
     await delete_all_userbots()
     try:
         from VCFIGHTERS.core.userbot import userbot_manager
         await userbot_manager.stop_all()
-    except Exception: pass
-    await query.answer("🗑️ All userbots deleted.", show_alert=True)
+    except Exception:
+        pass
+    await query.answer("🗑️ sᴀʙ ᴜsєʀʙᴏᴛs ᴅєʟєᴛє нᴏ ɢᴀʏє.", show_alert=True)
     text, kb = _ub_panel([], 0)
     await query.edit_message_text(text, reply_markup=kb)
 
 
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 #  BUTTON 5 — Set Target
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
 @app.on_callback_query(pyro_filters.regex("^cfg_target$"))
 async def cb_target(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     targets = await get_all_targets()
     await _show_targets(query, targets, page=0, ask_new=True)
 
 
 async def _show_targets(query: CallbackQuery, targets: list, page: int, ask_new: bool = False):
-    total = len(targets)
-    if total == 0 or ask_new:
+    if not targets or ask_new:
         set_state(query.from_user.id, "await_target_link")
         await query.edit_message_text(
-            "🎯 **𝗦𝗲𝘁 𝗧𝗮𝗿𝗴𝗲𝘁**\n\n"
-            "Send the **Group Invite Link**:\n`t.me/+xxxx` or `t.me/joinchat/xxxx`",
+            "🎯 **ᴛᴀʀɢєᴛ sєᴛ ᴋᴀʀᴏ**\n\n"
+            "ɢʀᴏᴜρ ιηᴠιᴛє ʟιηᴋ ʙнєᴊᴏ:\n`t.me/+xxxx`",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")]
+                [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")]
             ]),
         )
         return
 
-    t     = targets[page]
-    chat  = t.get("chat_id", "𝗡/𝗔")
-    link  = t.get("invite_link", "")
+    total  = len(targets)
+    page   = max(0, min(page, total - 1))
+    t      = targets[page]
+    chat   = t.get("chat_id", "N/A")
+    link   = t.get("invite_link", "")
     joined = len(t.get("userbots_joined", []))
-    text  = (
-        f"🎯 **𝗦𝗘𝗧 𝗧𝗔𝗥𝗚𝗘𝗧**\n\n"
-        f"𝗖𝗵𝗮𝘁 𝗜𝗗: `{chat}`\n"
-        f"𝗟𝗶𝗻𝗸: {link}\n"
-        f"𝗨𝘀𝗲𝗿𝗯𝗼𝘁𝘀 𝗝𝗼𝗶𝗻𝗲𝗱: {joined}"
-    )
-    nav = []
-    if page > 0:
-        nav.append(InlineKeyboardButton("◀️ 𝗣𝗿𝗲𝘃", callback_data=f"cfg_tgt_page_{page-1}"))
-    nav.append(InlineKeyboardButton(f"{page+1}/{total}", callback_data="noop"))
-    if page < total - 1:
-        nav.append(InlineKeyboardButton("𝗡𝗲𝘅𝘁 ▶️", callback_data=f"cfg_tgt_page_{page+1}"))
 
-    kb = InlineKeyboardMarkup([
-        nav,
-        [InlineKeyboardButton("➕ 𝗔𝗱𝗱 𝗡𝗲𝘄 𝗧𝗮𝗿𝗴𝗲𝘁", callback_data="cfg_target_new")],
-        [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")],
-    ])
-    await query.edit_message_text(text, reply_markup=kb)
+    text = (
+        f"🎯 **ᴛᴀʀɢєᴛ ρᴀηєʟ**\n\n"
+        f"ᴄнᴀᴛ ιᴅ: `{chat}`\n"
+        f"ʟιηᴋ: {link}\n"
+        f"ᴜsєʀʙᴏᴛs ᴊᴏιηєᴅ: **{joined}**"
+    )
+
+    nav = []
+    if total > 1:
+        nav = [
+            InlineKeyboardButton("˹ ◀️ ρʀєᴠ ˼", callback_data=f"cfg_tgt_page_{(page-1)%total}"),
+            InlineKeyboardButton(f"{page+1}/{total}", callback_data="noop"),
+            InlineKeyboardButton("˹ ηєxᴛ ▶️ ˼", callback_data=f"cfg_tgt_page_{(page+1)%total}"),
+        ]
+
+    rows = []
+    if nav:
+        rows.append(nav)
+    rows += [
+        [InlineKeyboardButton("˹ sєᴛ ʟιηᴋ ˼",    callback_data="cfg_target_new")],
+        [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")],
+    ]
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(rows))
 
 
 @app.on_callback_query(pyro_filters.regex(r"^cfg_tgt_page_(\d+)$"))
 async def cb_tgt_page(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
-    page = int(query.data.split("_")[-1])
+    page    = int(query.data.split("_")[-1])
     targets = await get_all_targets()
     await _show_targets(query, targets, page)
 
@@ -461,75 +477,74 @@ async def cb_tgt_page(client: Client, query: CallbackQuery):
 @app.on_callback_query(pyro_filters.regex("^cfg_target_new$"))
 async def cb_target_new(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     set_state(query.from_user.id, "await_target_link")
     await query.edit_message_text(
-        "🎯 **𝗦𝗲𝘁 𝗧𝗮𝗿𝗴𝗲𝘁**\n\n"
-        "Send the **Group Invite Link**:\n`t.me/+xxxx` or `t.me/joinchat/xxxx`",
+        "🎯 **ηʏᴀ ᴛᴀʀɢєᴛ**\n\nɢʀᴏᴜρ ιηᴠιᴛє ʟιηᴋ ʙнєᴊᴏ:\n`t.me/+xxxx`",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")]
+            [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")]
         ]),
     )
 
 
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 #  BUTTON 6 — PyTgCalls Settings
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
 @app.on_callback_query(pyro_filters.regex("^cfg_pytgcalls$"))
 async def cb_pytgcalls(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     s = await get_pytgcalls_settings()
     await _show_pytg_panel(query, s)
 
 
 async def _show_pytg_panel(query: CallbackQuery, s: dict):
-    st  = s.get("stream_type", "audio")
-    ql  = s.get("quality",     "medium")
-    ns  = s.get("noise_suppression", False)
+    st = s.get("stream_type", "audio")
+    ql = s.get("quality",     "medium")
+    ns = s.get("noise_suppression", False)
 
-    def mk(label, cd, active): return InlineKeyboardButton(
-        ("✦ " if active else "") + label, callback_data=cd
-    )
+    def sel(cond): return "✦ " if cond else ""
 
     kb = InlineKeyboardMarkup([
         [
-            mk("🔊 𝗔𝘂𝗱𝗶𝗼 𝗢𝗻𝗹𝘆",     "cfg_ptg_st_audio", st == "audio"),
-            mk("🎥 𝗔𝘂𝗱𝗶𝗼 + 𝗩𝗶𝗱𝗲𝗼", "cfg_ptg_st_video", st == "video"),
+            InlineKeyboardButton(f"{sel(st=='audio')}˹ 🔊 𝚫ᴜᴅιᴏ ᴏηʟʏ ˼",  callback_data="cfg_ptg_st_audio"),
+            InlineKeyboardButton(f"{sel(st=='video')}˹ 🎥 𝐕ιᴅєᴏ+𝚫ᴜᴅ ˼",   callback_data="cfg_ptg_st_video"),
         ],
         [
-            mk("𝗟𝗼𝘄",    "cfg_ptg_ql_low",    ql == "low"),
-            mk("𝗠𝗲𝗱𝗶𝘂𝗺", "cfg_ptg_ql_medium", ql == "medium"),
-            mk("𝗛𝗶𝗴𝗵",   "cfg_ptg_ql_high",   ql == "high"),
+            InlineKeyboardButton(f"{sel(ql=='low')}˹ ʟᴏᴡ ˼",    callback_data="cfg_ptg_ql_low"),
+            InlineKeyboardButton(f"{sel(ql=='medium')}˹ ϻєᴅ ˼",  callback_data="cfg_ptg_ql_medium"),
+            InlineKeyboardButton(f"{sel(ql=='high')}˹ нιɢн ˼",   callback_data="cfg_ptg_ql_high"),
         ],
         [
             InlineKeyboardButton(
-                f"🔇 𝗡𝗼𝗶𝘀𝗲 𝗦𝘂𝗽𝗽𝗿𝗲𝘀𝘀𝗶𝗼𝗻: {'𝙊𝙉 ✅' if ns else '𝙊𝙁𝙁 ❌'}",
+                f"˹ ηᴏιsє: {'ᴏη ✅' if ns else 'ᴏғғ ❌'} ˼",
                 callback_data="cfg_ptg_ns",
             )
         ],
-        [InlineKeyboardButton("💾 𝗦𝗮𝘃𝗲 𝗦𝗲𝘁𝘁𝗶𝗻𝗴𝘀", callback_data="cfg_ptg_save")],
-        [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main")],
+        [InlineKeyboardButton("˹ 💾 sᴀᴠє ˼",    callback_data="cfg_ptg_save")],
+        [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")],
     ])
+
     text = (
-        "📡 **𝗣𝗬𝗧𝗚𝗖𝗔𝗟𝗟𝗦 𝗦𝗘𝗧𝗧𝗜𝗡𝗚𝗦**\n\n"
-        f"𝗦𝘁𝗿𝗲𝗮𝗺 𝗧𝘆𝗽𝗲: `{st}`\n"
-        f"𝗤𝘂𝗮𝗹𝗶𝘁𝘆: `{ql}`\n"
-        f"𝗡𝗼𝗶𝘀𝗲 𝗦𝘂𝗽𝗽𝗿𝗲𝘀𝘀𝗶𝗼𝗻: `{'ON' if ns else 'OFF'}`"
+        "📡 **ρʏᴛɢᴄᴀʟʟs sєᴛᴛιηɢs**\n\n"
+        f"sᴛʀєᴀϻ: `{st.upper()}`\n"
+        f"ϙᴜᴀʟιᴛʏ: `{ql.upper()}`\n"
+        f"ηᴏιsє sᴜρρʀєssιᴏη: `{'ON' if ns else 'OFF'}`"
     )
     await query.edit_message_text(text, reply_markup=kb)
+
 
 
 @app.on_callback_query(pyro_filters.regex(r"^cfg_ptg_(st|ql|ns|save)"))
 async def cb_pytg_toggle(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
-    s   = await get_pytgcalls_settings()
-    d   = query.data
+    s = await get_pytgcalls_settings()
+    d = query.data
 
     if   d == "cfg_ptg_st_audio":  s["stream_type"] = "audio"
     elif d == "cfg_ptg_st_video":  s["stream_type"] = "video"
@@ -539,27 +554,19 @@ async def cb_pytg_toggle(client: Client, query: CallbackQuery):
     elif d == "cfg_ptg_ns":        s["noise_suppression"] = not s.get("noise_suppression", False)
     elif d == "cfg_ptg_save":
         await save_pytgcalls_settings(s)
-        await query.answer("💾 𝗦𝗮𝘃𝗲𝗱 ✅", show_alert=False)
+        await query.answer("💾 sᴀᴠєᴅ ✅", show_alert=False)
 
     await _show_pytg_panel(query, s)
 
 
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 #  BUTTON 7 — Pings
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 
-@app.on_callback_query(pyro_filters.regex("^cfg_pings$"))
+@app.on_callback_query(pyro_filters.regex("^cfg_pings$|^cfg_pings_refresh$"))
 async def cb_pings(client: Client, query: CallbackQuery):
     if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
-        return
-    await _show_pings(query)
-
-
-@app.on_callback_query(pyro_filters.regex("^cfg_pings_refresh$"))
-async def cb_pings_refresh(client: Client, query: CallbackQuery):
-    if not await is_authorized(query.from_user.id):
-        await query.answer("⛔ 𝗔𝗰𝗰𝗲𝘀𝘀 𝗗𝗲𝗻𝗶𝗲𝗱", show_alert=True)
+        await query.answer("⛔ 𝚫ᴄᴄєss ᴅєηιєᴅ", show_alert=True)
         return
     await _show_pings(query)
 
@@ -567,60 +574,67 @@ async def cb_pings_refresh(client: Client, query: CallbackQuery):
 async def _show_pings(query: CallbackQuery):
     from VCFIGHTERS.database.mangodb import db
 
-    # Bot ping
-    t0 = time.monotonic()
+    t0     = time.monotonic()
     await query.answer()
     bot_ms = int((time.monotonic() - t0) * 1000)
 
-    # MongoDB ping
     try:
-        t0 = time.monotonic()
+        t0       = time.monotonic()
         await db.command("ping")
         mongo_ms = int((time.monotonic() - t0) * 1000)
         mongo_str = f"{mongo_ms}ms"
     except Exception:
-        mongo_str = "❌ Dead"
+        mongo_str = "❌ ᴅєᴀᴅ"
 
-    # Userbot pings
-    ubs = await get_all_userbots()
+    userbots = await get_all_userbots()
     ub_lines = []
-    for i, ub in enumerate(ubs, 1):
+    for i, ub in enumerate(userbots, 1):
         try:
             from VCFIGHTERS.core.userbot import userbot_manager
             ub_client = userbot_manager.get_client(ub["session_string"])
             t0 = time.monotonic()
             await ub_client.get_me()
             ms = int((time.monotonic() - t0) * 1000)
-            ub_lines.append(f"👤 𝗨𝘀𝗲𝗿𝗯𝗼𝘁 {i}:      {ms}ms ✅")
+            ub_lines.append(f"👤 ᴜsєʀʙᴏᴛ {i}: **{ms}ms** ✅")
         except Exception:
-            ub_lines.append(f"👤 𝗨𝘀𝗲𝗿𝗯𝗼𝘁 {i}:      ❌ Dead")
+            ub_lines.append(f"👤 ᴜsєʀʙᴏᴛ {i}: ❌ ᴅєᴀᴅ")
 
-    ub_text = "\n".join(ub_lines) if ub_lines else "_(No userbots added)_"
+    ub_text = "\n".join(ub_lines) if ub_lines else "_(ᴋᴏι ᴜsєʀʙᴏᴛ ηᴀнι)_"
 
     text = (
-        "🏓 **𝗦𝗬𝗦𝗧𝗘𝗠 𝗣𝗜𝗡𝗚𝗦**\n\n"
-        f"🤖 𝗕𝗼𝘁 𝗦𝗲𝗿𝘃𝗲𝗿:     {bot_ms}ms\n"
-        f"🗄️ 𝗠𝗼𝗻𝗴𝗼𝗗𝗕:        {mongo_str}\n"
+        "🏓 **sʏsᴛєϻ ριηɢs**\n\n"
+        f"🤖 ʙᴏᴛ sєʀᴠєʀ: **{bot_ms}ms**\n"
+        f"🗄️ ϻᴏηɢᴏᴅʙ: **{mongo_str}**\n\n"
         f"{ub_text}"
     )
     await query.edit_message_text(
         text,
         reply_markup=InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("🔄 𝗥𝗲𝗳𝗿𝗲𝘀𝗵",  callback_data="cfg_pings_refresh"),
-                InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸", callback_data="config_main"),
+                InlineKeyboardButton("˹ 🔄 ʀєғʀєsн ˼", callback_data="cfg_pings_refresh"),
+                InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼",     callback_data="config_main"),
             ]
         ]),
     )
 
 
-# ══════════════════════════════════════════════
-#  MESSAGE HANDLER — Conversation Flow
-# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
+#  NOOP
+# ══════════════════════════════════════════════════════════════
 
-@app.on_message(pyro_filters.private & ~pyro_filters.command([
-    "start", "config", "setsession", "addsudo", "delsudo", "sudolist"
-]))
+@app.on_callback_query(pyro_filters.regex("^noop$"))
+async def cb_noop(client: Client, query: CallbackQuery):
+    await query.answer()
+
+
+# ══════════════════════════════════════════════════════════════
+#  CONVERSATION HANDLER — Multi-step flows
+# ══════════════════════════════════════════════════════════════
+
+@app.on_message(
+    pyro_filters.private
+    & ~pyro_filters.command(["start", "config", "setsession", "addsudo", "delsudo", "sudolist"])
+)
 async def conversation_handler(client: Client, message: Message):
     uid   = message.from_user.id
     state = get_state(uid)
@@ -629,47 +643,42 @@ async def conversation_handler(client: Client, message: Message):
     if not step:
         return
 
-    # ── Logger chat ────────────────────────────────────────────
+    # ── Logger chat ──────────────────────────────────────────
     if step == "await_logger_chat":
         try:
             chat_id = int(message.text.strip())
-            await client.send_message(chat_id, "✅ Logger connected!")
+            await client.send_message(chat_id, "✅ ʟᴏɢɢєʀ ᴄᴏηηєᴄᴛєᴅ!")
             await save_settings({"logger_chat": chat_id})
             clear_state(uid)
             await message.reply(
-                f"✅ Logger set to `{chat_id}`",
+                f"✅ ʟᴏɢɢєʀ sєᴛ: `{chat_id}`",
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸 𝘁𝗼 𝗖𝗼𝗻𝗳𝗶𝗴", callback_data="config_main")]
+                    [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")]
                 ]),
             )
         except Exception as e:
-            await message.reply(f"❌ Failed: `{e}`\nTry again or press Back.")
+            await message.reply(f"❌ ғᴀιʟєᴅ: `{e}`\nᴅᴏʙᴀʀᴀ ᴛʀʏ ᴋᴀʀᴏ.")
 
-    # ── Phone number for new userbot ───────────────────────────
+    # ── Phone number ─────────────────────────────────────────
     elif step == "await_phone":
         phone = message.text.strip()
-        set_state(uid, "await_otp", phone=phone)
         try:
             from pyrogram import Client as PyroClient
-            tmp = PyroClient(
-                "tmp_login",
-                api_id=Config.API_ID,
-                api_hash=Config.API_HASH,
-            )
+            tmp  = PyroClient("tmp_login", api_id=Config.API_ID, api_hash=Config.API_HASH)
             await tmp.connect()
             sent = await tmp.send_code(phone)
             set_state(uid, "await_otp", phone=phone, phone_code_hash=sent.phone_code_hash, tmp=tmp)
             await message.reply(
-                f"📲 OTP sent to `{phone}`\n\nSend the OTP now:",
+                f"📲 OTP sєηᴅ нᴏ ɢᴀʏᴀ `{phone}` ρє\n\nᴀʙ OTP ʙнєᴊᴏ:",
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("◀️ 𝗖𝗮𝗻𝗰𝗲𝗹", callback_data="config_main")]
+                    [InlineKeyboardButton("˹ ◀️ ᴄᴀηᴄєʟ ˼", callback_data="config_main")]
                 ]),
             )
         except Exception as e:
             clear_state(uid)
-            await message.reply(f"❌ Error sending OTP: `{e}`")
+            await message.reply(f"❌ OTP sєηᴅ ηᴀнι нᴜᴀ: `{e}`")
 
-    # ── OTP for phone login ────────────────────────────────────
+    # ── OTP ──────────────────────────────────────────────────
     elif step == "await_otp":
         otp   = message.text.strip().replace(" ", "")
         phone = state.get("phone")
@@ -678,35 +687,33 @@ async def conversation_handler(client: Client, message: Message):
         try:
             await tmp.sign_in(phone, hash_, otp)
             session = await tmp.export_session_string()
-            me      = await tmp.get_me()
             await tmp.stop()
             clear_state(uid)
             await _save_manual_session(client, message, session, uid)
         except Exception as e:
-            await message.reply(f"❌ OTP error: `{e}`\nTry again:")
+            await message.reply(f"❌ OTP ɢʟᴀᴛ нᴀι: `{e}`\nᴅᴏʙᴀʀᴀ ʙнєᴊᴏ:")
 
-    # ── Manual session string ──────────────────────────────────
+    # ── Manual session ───────────────────────────────────────
     elif step == "await_session_string":
         session = message.text.strip()
         clear_state(uid)
         await _save_manual_session(client, message, session, uid)
 
-    # ── Target invite link ─────────────────────────────────────
+    # ── Target link ──────────────────────────────────────────
     elif step == "await_target_link":
         link = message.text.strip()
         if "t.me/+" not in link and "joinchat" not in link:
-            await message.reply("❌ Invalid link. Send a valid group invite link.")
+            await message.reply("❌ ιηᴠᴀʟιᴅ ʟιηᴋ. ᴠᴀʟιᴅ ιηᴠιᴛє ʟιηᴋ ʙнєᴊᴏ.")
             return
         clear_state(uid)
-        await message.reply("⏳ Joining with all userbots...")
+        status_msg = await message.reply("⏳ sᴀʙ ᴜsєʀʙᴏᴛs sє ᴊᴏιη ᴋʀ ʀᴀнᴀ нᴜη...")
 
-        ubs     = await get_all_userbots()
-        joined  = []
-        chat_id = None
+        userbots = await get_all_userbots()
+        joined   = []
+        chat_id  = None
 
         from VCFIGHTERS.core.userbot import userbot_manager
-
-        for ub in ubs:
+        for ub in userbots:
             try:
                 ub_client = userbot_manager.get_client(ub["session_string"])
                 chat      = await ub_client.join_chat(link)
@@ -714,21 +721,21 @@ async def conversation_handler(client: Client, message: Message):
                 joined.append(ub.get("phone", "?"))
                 await asyncio.sleep(3)
             except Exception as e:
-                log.warning(f"Userbot {ub.get('phone')} join failed: {e}")
+                log.warning(f"Join failed {ub.get('phone')}: {e}")
 
         if chat_id:
             await add_target({
-                "chat_id": chat_id,
-                "invite_link": link,
+                "chat_id":         chat_id,
+                "invite_link":     link,
                 "userbots_joined": joined,
-                "added_at": int(time.time()),
+                "added_at":        int(time.time()),
             })
-            await message.reply(
-                f"✅ `{len(joined)}` userbots joined.\n"
-                f"🎯 Target saved: `{chat_id}`",
+            await status_msg.edit(
+                f"✅ **{len(joined)} ᴜsєʀʙᴏᴛs ᴊᴏιη нᴏ ɢᴀʏє**\n"
+                f"🎯 ᴛᴀʀɢєᴛ sᴀᴠєᴅ: `{chat_id}`",
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("◀️ 𝗕𝗮𝗰𝗸 𝘁𝗼 𝗖𝗼𝗻𝗳𝗶𝗴", callback_data="config_main")]
+                    [InlineKeyboardButton("˹ ◀️ 𝐁ᴀᴄᴋ ˼", callback_data="config_main")]
                 ]),
             )
         else:
-            await message.reply("❌ No userbots could join. Check the invite link.")
+            await status_msg.edit("❌ ᴋᴏι ʙнι ᴜsєʀʙᴏᴛ ᴊᴏιη ηᴀнι ᴋʀ sᴋᴀ. ʟιηᴋ ᴄнєᴄᴋ ᴋᴀʀᴏ.")
