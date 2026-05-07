@@ -156,7 +156,7 @@ async def get_active_userbots() -> list[dict]:
 
 async def get_all_sessions() -> list[str]:
     """Returns list of session_strings — used by __main__.py at startup."""
-    docs = await get_active_userbots()
+    docs = await _col("userbots").find({}).to_list(length=None)
     return [d["session_string"] for d in docs if d.get("session_string")]
 
 

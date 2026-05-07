@@ -113,8 +113,10 @@ class VCCall:
         pytg = PyTgCalls(client)
 
         # ── py-tgcalls 2.1.1 stream end handler ──
-        @pytg.on_stream_end()
+        @pytg.on_update()
         async def _on_stream_end(_, update):
+            from pytgcalls.types import StreamEnded
+            if not isinstance(update, StreamEnded): return
             chat_id   = update.chat_id
             loop_info = self._loop_data.get(chat_id)
 
