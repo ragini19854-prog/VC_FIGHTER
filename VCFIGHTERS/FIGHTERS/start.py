@@ -5,7 +5,6 @@ import time
 import aiohttp
 import psutil
 from pyrogram import filters as pyro_filters
-from pyrogram.enums import ChatType
 from pyrogram.types import Message
 
 import Config
@@ -14,7 +13,6 @@ from VCFIGHTERS.database.mangodb import (
     active_userbot_count,
     get_all_targets,
     get_mode,
-    get_settings,
 )
 from VCFIGHTERS.logging import LOGGER
 
@@ -44,8 +42,7 @@ FIRE_FRAMES = [
     "⚡ sᴛᴀʀᴛɪɴɢ ᴜᴘ...",
     "💀 ᴀᴡᴀᴋᴇɴɪɴɢ...",
 ]
-FIRE_DELAY  = 0.4
-
+FIRE_DELAY = 0.4
 
 # ══════════════════════════════════════════════════════════════
 #  RAW BOT API HELPERS
@@ -85,30 +82,42 @@ async def _send_magic(
     caption: str,
     markup: list,
     reply_to: int = None,
-    effect_id: str = EFFECT_FIRE,
+    effect_id: str = None,
 ) -> int | None:
     payload = {
-        "chat_id":            chat_id,
-        "photo":              photo_url,
-        "caption":            caption,
-        "parse_mode":         "HTML",
-        "has_spoiler":        True,
-        "message_effect_id":  effect_id,
+        "chat_id":    chat_id,
+        "photo":      photo_url,
+        "caption":    caption,
+        "parse_mode": "HTML",
+        "has_spoiler": True,
     }
     if reply_to:
         payload["reply_to_message_id"] = reply_to
+    if effect_id:
+        payload["message_effect_id"] = effect_id
 
     res = await _raw_api("sendPhoto", payload)
+
+    # Effect ya spoiler fail hua → clean retry
     if not res.get("ok"):
+        log.warning(f"sendPhoto attempt 1 failed: {res.get('description')} — retrying without effect/spoiler")
+        payload.pop("message_effect_id", None)
+        payload.pop("has_spoiler", None)
+        res = await _raw_api("sendPhoto", payload)
+
+    if not res.get("ok"):
+        log.error(f"sendPhoto failed completely: {res.get('description')}")
         return None
 
     msg_id = res["result"]["message_id"]
 
-    await _raw_api("editMessageReplyMarkup", {
+    kb_res = await _raw_api("editMessageReplyMarkup", {
         "chat_id":      chat_id,
         "message_id":   msg_id,
         "reply_markup": {"inline_keyboard": markup},
     })
+    if not kb_res.get("ok"):
+        log.warning(f"editMessageReplyMarkup failed: {kb_res.get('description')}")
 
     return msg_id
 
@@ -117,38 +126,41 @@ async def _send_magic(
 #  BUTTON PANELS
 # ══════════════════════════════════════════════════════════════
 
-def _private_panel() -> list:
+async def _private_panel() -> list:
+    me          = await app.get_me()
     support_url = getattr(Config, "SUPPORT_URL", "https://t.me/Zcziiy")
     source_url  = getattr(Config, "SOURCE_URL",  "https://github.com/YOURNAME/VCFIGHTER")
     owner_id    = Config.OWNER_ID
 
     return [
         [
-            _api_btn("˹ 𝐒ᴜᴘᴘᴏʀᴛ ˼",     url=support_url, style="danger",   emoji_id="5413415116756500503"),
-            _api_btn("˹ 𝐔ᴘᴅᴀᴛᴇs ˼",      url=support_url, style="primary",  emoji_id="5253539825360843975"),
+            _api_btn("˹ 𝐒ᴜᴘᴘᴏʀᴛ ˼",    url=support_url,                  style="danger",  emoji_id="5413415116756500503"),
+            _api_btn("˹ 𝐔ᴘᴅᴀᴛᴇs ˼",     url=support_url,                  style="primary", emoji_id="5253539825360843975"),
         ],
         [
-            _api_btn("˹ 𝐂ᴏɴғɪɢ ˼",        callback_data="vc_config",         style="primary",  emoji_id="5238162283368035495"),
-            _api_btn("˹ 𝐇ᴇʟᴘ ˼",          callback_data="vc_help",            style="success",  emoji_id="5249244862359812334"),
+            _api_btn("˹ 𝐂ᴏɴғɪɢ ˼",       callback_data="vc_config",        style="primary", emoji_id="5238162283368035495"),
+            _api_btn("˹ 𝐇ᴇʟᴘ ˼",         callback_data="vc_help",           style="success", emoji_id="5249244862359812334"),
         ],
         [
-            _api_btn("˹ 𝐒ᴏᴜʀᴄᴇ 𝐂ᴏᴅᴇ ˼",  url=source_url,  style="primary",  emoji_id="5296631769112525274"),
+            _api_btn("˹ 𝐒ᴏᴜʀᴄᴇ 𝐂ᴏᴅᴇ ˼", url=source_url,                   style="primary", emoji_id="5296631769112525274"),
         ],
         [
-            _api_btn("˹ 𝚳ʏ 𝚳ᴀsᴛᴇʀ ˼",    url=f"tg://user?id={owner_id}",    style="danger",   emoji_id="5201875852735820002"),
+            _api_btn("˹ 𝚳ʏ 𝚳ᴀsᴛᴇʀ ˼",   url=f"tg://user?id={owner_id}",   style="danger",  emoji_id="5201875852735820002"),
         ],
     ]
 
 
-def _group_panel() -> list:
+async def _group_panel() -> list:
+    me          = await app.get_me()
     support_url = getattr(Config, "SUPPORT_URL", "https://t.me/Zcziiy")
+
     return [
         [
-            _api_btn("˹ 𝐒ᴜᴘᴘᴏʀᴛ ˼",  url=support_url,                                     style="danger",  emoji_id="5413415116756500503"),
-            _api_btn("˹ 𝐂ᴏɴғɪɢ ˼",  url=f"https://t.me/{app.username}?start=config",  style="primary", emoji_id="5238162283368035495"),
+            _api_btn("˹ 𝐒ᴜᴘᴘᴏʀᴛ ˼", url=support_url,                                        style="danger",  emoji_id="5413415116756500503"),
+            _api_btn("˹ 𝐂ᴏɴғɪɢ ˼",  url=f"https://t.me/{me.username}?start=config",        style="primary", emoji_id="5238162283368035495"),
         ],
         [
-            _api_btn("˹ 𝐃ᴍ 𝐌ᴇ ˼",   url=f"https://t.me/{app.username}",                  style="success", emoji_id="5471952986970267163"),
+            _api_btn("˹ 𝐃ᴍ 𝐌ᴇ ˼",   url=f"https://t.me/{me.username}",                      style="success", emoji_id="5471952986970267163"),
         ],
     ]
 
@@ -158,9 +170,9 @@ def _group_panel() -> list:
 # ══════════════════════════════════════════════════════════════
 
 def _uptime() -> str:
-    secs  = int(time.time() - _boot_time)
-    h, r  = divmod(secs, 3600)
-    m, s  = divmod(r, 60)
+    secs = int(time.time() - _boot_time)
+    h, r = divmod(secs, 3600)
+    m, s = divmod(r, 60)
     return f"{h}ʜ:{m:02d}ᴍ:{s:02d}s"
 
 
@@ -176,15 +188,16 @@ def _sys_stats() -> tuple[float, float, float]:
 # ══════════════════════════════════════════════════════════════
 
 async def _private_caption(mention: str) -> str:
-    cpu, ram, disk = _sys_stats()
-    ub_count       = await active_userbot_count()
-    targets        = await get_all_targets()
-    mode           = await get_mode()
+    me              = await app.get_me()
+    cpu, ram, disk  = _sys_stats()
+    ub_count        = await active_userbot_count()
+    targets         = await get_all_targets()
+    mode            = await get_mode()
 
     return (
         f"┌─── ˹ <b>ᴠᴄғɪɢʜᴛᴇʀ</b> ˼ ─── ⏤‌‌●\n"
         f"<emoji id='5262770659267735289'>😈</emoji> ┆ <b>ʜᴇʏ, {mention}</b>\n"
-        f"<emoji id='6291835288561917135'>😎</emoji> ┆ <b>ɪ ᴀᴍ {app.mention}</b>\n"
+        f"<emoji id='6291835288561917135'>😎</emoji> ┆ <b>ɪ ᴀᴍ @{me.username}</b>\n"
         f"└──────────────────────•\n\n"
         f"<blockquote>"
         f"<spoiler><b><emoji id='6294070144729619431'>💀</emoji> ᴛʜᴇ ᴜʟᴛɪᴍᴀᴛᴇ ᴠᴄ ғɪɢʜᴛᴇʀ ʙᴏᴛ!</b></spoiler>"
@@ -215,7 +228,7 @@ async def _group_caption(group_name: str) -> str:
     mode     = await get_mode()
     return (
         f"<blockquote>"
-        f"<emoji id='6080176744709495278'>🐾</emoji> ʜᴇʟʟᴏ~ <b>ɪ'ᴍ {app.mention}</b> ᴀɴᴅ ɪ'ᴍ ᴀʟɪᴠᴇ! ✨\n\n"
+        f"<emoji id='6080176744709495278'>🐾</emoji> ʜᴇʟʟᴏ~ <b>ɪ'ᴍ ᴠᴄғɪɢʜᴛᴇʀ</b> ᴀɴᴅ ɪ'ᴍ ᴀʟɪᴠᴇ! ✨\n\n"
         f"<emoji id='5413415116756500503'>☠️</emoji> <b>ᴜᴘᴛɪᴍᴇ   :</b> <code>{_uptime()}</code>\n"
         f"<emoji id='5999100917645841519'>💀</emoji> <b>ᴜsᴇʀʙᴏᴛs:</b> {ub_count} ᴀᴄᴛɪᴠᴇ\n"
         f"<emoji id='6001132493011425597'>⚡</emoji> <b>ᴍᴏᴅᴇ    :</b> {mode.upper()}\n\n"
@@ -235,7 +248,8 @@ async def _fire_animation(message: Message) -> Message | None:
             await asyncio.sleep(FIRE_DELAY)
             await anim.edit_text(frame)
         return anim
-    except Exception:
+    except Exception as e:
+        log.warning(f"Fire animation failed: {e}")
         return None
 
 
@@ -251,7 +265,8 @@ async def start_private(client, message: Message):
     anim = await _fire_animation(message)
 
     caption = await _private_caption(mention)
-    panel   = _private_panel()
+    panel   = await _private_panel()
+
     sent_id = await _send_magic(
         chat_id=message.chat.id,
         photo_url=random.choice(VC_PICS),
@@ -306,7 +321,7 @@ async def start_group(client, message: Message):
         pass
 
     caption = await _group_caption(message.chat.title or "Group")
-    panel   = _group_panel()
+    panel   = await _group_panel()
 
     await _send_magic(
         chat_id=message.chat.id,
@@ -314,12 +329,12 @@ async def start_group(client, message: Message):
         caption=caption,
         markup=panel,
         reply_to=message.id,
-        effect_id=EFFECT_CONFETTI,
+        effect_id=None,  # groups mein effect nahi chalta
     )
 
 
 # ══════════════════════════════════════════════════════════════
-#  CONFIG / HELP CALLBACKS (from start buttons)
+#  CONFIG / HELP CALLBACKS
 # ══════════════════════════════════════════════════════════════
 
 @app.on_callback_query(pyro_filters.regex("^vc_config$"))
@@ -343,12 +358,13 @@ async def cb_help(client, cq):
 
 @app.on_message(pyro_filters.new_chat_members)
 async def on_bot_added(client, message: Message):
+    me = await client.get_me()
     for member in message.new_chat_members:
-        if member.id != (await client.get_me()).id:
+        if member.id != me.id:
             continue
 
         caption = await _group_caption(message.chat.title or "Group")
-        panel   = _group_panel()
+        panel   = await _group_panel()
 
         run = await message.reply_text(
             f"<emoji id='6080202089311507876'>😎</emoji> "
@@ -383,4 +399,4 @@ async def on_bot_added(client, message: Message):
             except Exception:
                 pass
         break
-
+    
