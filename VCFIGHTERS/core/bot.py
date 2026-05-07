@@ -12,6 +12,8 @@ log = LOGGER("Bot")
 
 # ─────────────────────────────────────────────
 # MAIN BOT CLIENT — Singleton
+# plugins=dict(...) NAHI dalna — __main__.py ka load_handlers() handle karta hai
+# Dono saath hote toh double registration hota tha
 # ─────────────────────────────────────────────
 
 app = Client(
@@ -19,7 +21,7 @@ app = Client(
     api_id=Config.API_ID,
     api_hash=Config.API_HASH,
     bot_token=Config.BOT_TOKEN,
-    plugins=dict(root="VCFIGHTERS"),  # handlers auto-register
+    # plugins= REMOVED — double handler registration fix
 )
 
 log.info("⚙️ Bot client initialized")
