@@ -128,7 +128,7 @@ async def _send_magic(
 
 async def _private_panel() -> list:
     me          = await app.get_me()
-    support_url = getattr(Config, "SUPPORT_URL", "https://t.me/Zcziiy")
+    support_url = getattr(Config, "SUPPORT_URL", "https://t.me/+1NRRqUd1replNTM1")
     source_url  = getattr(Config, "SOURCE_URL",  "https://github.com/YOURNAME/VCFIGHTER")
     owner_id    = Config.OWNER_ID
 
@@ -142,7 +142,7 @@ async def _private_panel() -> list:
             _api_btn("˹ 𝐇ᴇʟᴘ ˼",         callback_data="vc_help",           style="success", emoji_id="5249244862359812334"),
         ],
         [
-            _api_btn("˹ 𝐒ᴏᴜʀᴄᴇ 𝐂ᴏᴅᴇ ˼", url=source_url,                   style="primary", emoji_id="5296631769112525274"),
+            _api_btn("˹ 𝐒ᴏᴜʀᴄᴇ 𝐂ᴏᴅᴇ ˼", callback_data="kya re madarchod kaam kar repo leke kya karega",                   style="primary", emoji_id="5296631769112525274"),
         ],
         [
             _api_btn("˹ 𝚳ʏ 𝚳ᴀsᴛᴇʀ ˼",   url=f"tg://user?id={owner_id}",   style="danger",  emoji_id="5201875852735820002"),
@@ -152,7 +152,7 @@ async def _private_panel() -> list:
 
 async def _group_panel() -> list:
     me          = await app.get_me()
-    support_url = getattr(Config, "SUPPORT_URL", "https://t.me/Zcziiy")
+    support_url = getattr(Config, "SUPPORT_URL", "https://t.me/+1NRRqUd1replNTM1")
 
     return [
         [
@@ -216,8 +216,8 @@ async def _private_caption(mention: str) -> str:
         f"•──────────────────────•\n"
         f"<blockquote>"
         f"<b><emoji id='6294023338176028117'>💀</emoji> ✦ᴘᴏᴡᴇʀᴇᴅ ʙʏ » "
-        f"<a href='{getattr(Config, 'SUPPORT_URL', 'https://t.me/Zcziiy')}'>"
-        f"<spoiler>── 𝛞 𝛜 𝛈 𝛔 𝛈</spoiler></a></b>"
+        f"<a href='{getattr(Config, 'SUPPORT_URL', 'https://t.me/+1NRRqUd1replNTM1')}'>"
+        f"<spoiler>──𝕸𝖆𝖉𝖆𝖗𝖆</spoiler></a></b>"
         f"</blockquote>\n"
         f"•──────────────────────•"
     )
