@@ -49,22 +49,22 @@ def _list(key: str, default: list | None = None) -> list[int]:
 #  REQUIRED — Telegram
 # ══════════════════════════════════════════════════════════════
 
-API_ID    = _int("API_ID",    0, required=True)
-API_HASH  = _get("API_HASH",  required=True)
-BOT_TOKEN = _get("BOT_TOKEN", required=True)
+API_ID    = _int("36055068",    0, required=True)
+API_HASH  = _get("e62c399663de4721efb786f7cfc64022",  required=True)
+BOT_TOKEN = _get("8619108799:AAEYEEpA6S9hhZ_qalyxripDqYEv8N0kHFw", required=True)
 
 # ══════════════════════════════════════════════════════════════
 #  REQUIRED — Database
 # ══════════════════════════════════════════════════════════════
 
-MONGO_URI = _get("MONGO_URI", required=True)
+MONGO_URI = _get("mongodb+srv://bsdk:betichod@cluster0.fgj1r9z.mongodb.net/?retryWrites=true&w=majority", required=True)
 DB_NAME   = _get("DB_NAME",   default="vcfighter")
 
 # ══════════════════════════════════════════════════════════════
 #  REQUIRED — Owner
 # ══════════════════════════════════════════════════════════════
 
-OWNER_ID = _int("OWNER_ID", 0, required=True)
+OWNER_ID = _int("6670240589", 0, required=True)
 
 # ══════════════════════════════════════════════════════════════
 #  OPTIONAL — Sudo Users
@@ -125,7 +125,7 @@ STARTUP_SESSIONS: list[str] = [
 
 BOT_NAME    = _get("BOT_NAME",    default="VCFighter")
 BOT_VERSION = _get("BOT_VERSION", default="2.0")
-SUPPORT_URL = _get("SUPPORT_URL", default="https://t.me/Zcziiy")
+SUPPORT_URL = _get("SUPPORT_URL", default="https://t.me/+1NRRqUd1replNTM1")
 SOURCE_URL  = _get("SOURCE_URL",  default="https://github.com/YOURNAME/VCFIGHTER")
 
 # ══════════════════════════════════════════════════════════════
@@ -155,8 +155,8 @@ BASS_LEVELS = {
 #  OPTIONAL — Support & Community Links
 # ══════════════════════════════════════════════════════════════
 
-SUPPORT_CHAT    = _get("SUPPORT_CHAT",    default="https://t.me/Zcziiy")       # Support group link
-SUPPORT_CHANNEL = _get("SUPPORT_CHANNEL", default="https://t.me/Zcziiy")       # Updates channel link
+SUPPORT_CHAT    = _get("SUPPORT_CHAT",    default="https://t.me/+1NRRqUd1replNTM1")       # Support group link
+SUPPORT_CHANNEL = _get("SUPPORT_CHANNEL", default="https://t.me/+1NRRqUd1replNTM1")       # Updates channel link
 
 # ══════════════════════════════════════════════════════════════
 #  OPTIONAL — Bot Pictures (used in /start, /help etc)
